@@ -3,17 +3,18 @@ const fs = require('fs');
 const color = require('colors');
 const axios = require('axios');
 
-class Busqueda{
+class Busqueda {
 
     historial = [];
 
     dbPath = './db/data.json';
 
-    constructor(){
+    constructor() {
 
     }
 
-    get paramsMapbox(){
+    // Se devuelven los parametros para enviarlo a mapbox
+    get paramsMapbox() {
 
         return {
             //types: ['country', 'region'],
@@ -24,7 +25,8 @@ class Busqueda{
 
     }
 
-    get paramsOpenWeather(){
+    // Se devuelven los parametros para enviarlos a openweather
+    get paramsOpenWeather() {
 
         return {
             appid: process.env.OPENWEATHER_KEY,
@@ -35,12 +37,13 @@ class Busqueda{
     }
 
 
-    get historialCapitalizado(){
+    // Se devuelve el historial de los lugares buscados capitalizados
+    get historialCapitalizado() {
 
-        return this.historial.map( lugar => {
+        return this.historial.map(lugar => {
 
             let palabras = lugar.split(' ');
-            palabras = palabras.map( p => p[0].toUpperCase() + p.substring(1)  );
+            palabras = palabras.map(p => p[0].toUpperCase() + p.substring(1));
 
             return palabras.join(' ');
 
@@ -48,37 +51,39 @@ class Busqueda{
 
     }
 
-    async encontrarLugar( info = '' ){
+    // Metodo que vuelve la información del lugar ingresado
+    async encontrarLugar(info = '') {
 
-        try{
+        try {
 
             //const lugar = await axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${ info }.json?types=country%2Cregion&language=es&access_token=${process.env.MAPBOX_KEY}`);
-            
+
 
             const instance = axios.create({
-                baseURL: `https://api.mapbox.com/geocoding/v5/mapbox.places/${ info }.json`,
+                baseURL: `https://api.mapbox.com/geocoding/v5/mapbox.places/${info}.json`,
                 params: this.paramsMapbox
             })
 
             const resp = await instance.get();
-            
-            return resp.data.features.map( lugar => ({
+
+            return resp.data.features.map(lugar => ({
 
                 id: lugar.id,
                 nombre: lugar.place_name,
                 lon: lugar.center[0],
                 lat: lugar.center[1]
 
-            }) );
+            }));
 
-        }catch(e){
+        } catch (e) {
             console.log(e);
         }
     }
 
 
-    async climaLugar( lat, lon ){
-    
+    // Metodo que devuelve la informacion del clima del lugar enviado
+    async climaLugar(lat, lon) {
+
         try {
 
             const instancia = axios.create({
@@ -95,7 +100,7 @@ class Busqueda{
                 temp_min: main.temp_min,
                 temp_max: main.temp_max
             }
-            
+
         } catch (error) {
             console.log(error);
         }
@@ -103,14 +108,15 @@ class Busqueda{
     }
 
 
-    agregarHistorial( lugar = '' ) {
+    // Agrega un lugar buscado al arreglo de hostorial
+    agregarHistorial(lugar = '') {
 
-        if( this.historial.includes( lugar.toLocaleLowerCase() ) ) {
+        if (this.historial.includes(lugar.toLocaleLowerCase())) {
             return;
         }
 
-        this.historial = this.historial.splice(0,5);
-        this.historial.unshift( lugar.toLocaleLowerCase() );
+        this.historial = this.historial.splice(0, 5);
+        this.historial.unshift(lugar.toLocaleLowerCase());
         this.guardarData();
 
 
@@ -120,28 +126,28 @@ class Busqueda{
 
 
     // Crea y Guarda la informacion recibida en un archivo JSON
-guardarData(){
-    
-    const payload = {
-        historial: this.historial
-    }
-    fs.writeFileSync(this.dbPath, JSON.stringify( payload ));
+    guardarData() {
 
-}
+        const payload = {
+            historial: this.historial
+        }
+        fs.writeFileSync(this.dbPath, JSON.stringify(payload));
 
-// Funcion que lee el archivo JSON que contiene los datos
-leerData(){
-
-    // Si no existe el archivo devuelve null
-    if ( !fs.existsSync(this.dbPath) ) {
-        return null;
     }
 
-    // Se leen los datos deñ archivo JSON y se devuelven los datos
-    const info = fs.readFileSync(this.dbPath, { encoding: 'utf-8' });
-    const data = JSON.parse(info);
-    this.historial = data.historial;
-}
+    // Funcion que lee el archivo JSON que contiene los datos
+    leerData() {
+
+        // Si no existe el archivo devuelve null
+        if (!fs.existsSync(this.dbPath)) {
+            return null;
+        }
+
+        // Se leen los datos deñ archivo JSON y se devuelven los datos
+        const info = fs.readFileSync(this.dbPath, { encoding: 'utf-8' });
+        const data = JSON.parse(info);
+        this.historial = data.historial;
+    }
 
 
 }

@@ -12,6 +12,7 @@ const main = async() => {
 
     const busquedas = new Busquedas();
 
+    // Se cargar los datos si existen en el arreglo historial
     busquedas.leerData();
 
     do{
@@ -19,7 +20,8 @@ const main = async() => {
         opt = await inquirerMenu(); 
 
         switch(opt){
-            case 1:
+            case 1: // 1. Clima
+                // Busca un lugar/region y devuelve la información del clima de ese lugar
                 const info = await leerInput('Lugar a buscar: ');
                 const lugares = await busquedas.encontrarLugar( info );
                 const id = await listadoLugares( lugares );
@@ -41,8 +43,8 @@ const main = async() => {
 
                 
                 break;
-            case 2:
-
+            case 2: // Historial
+                // Se imprime en consola el historial de la app
                 busquedas.historialCapitalizado.forEach( ( lugar, i ) => {
 
                     const idx = `${ i + 1 }.`.green;
